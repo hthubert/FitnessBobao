@@ -24,9 +24,9 @@ namespace BaiduTextToVoice
             {
                 {"spd", 5}, // 语速
                 {"vol", 5}, // 音量
-                {"per", 1}  // 发音人，4：情感度丫丫童声
+                {"per", 0}  // 发音人，4：情感度丫丫童声
             };
-            var result = _ttsClient.Synthesis("54321", option);
+            var result = _ttsClient.Synthesis("亲爱的用户，您好，这是一个语音合成示例，感谢您对科大讯飞语音技术的支持！科大讯飞是亚太地区最大的语音上市公司，股票代码：002230", option);
             if (!result.Success) {
                 Console.WriteLine(result.ErrorMsg);
                 Console.ReadLine();
