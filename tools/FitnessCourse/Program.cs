@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Windows.Forms;
-using FitnessCourse;
 
 namespace Htggbb.FitnessCourse
 {
