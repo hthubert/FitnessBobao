@@ -68,7 +68,7 @@ namespace BaiduTextToVoice
                 {"vol", 5}, // 音量
                 {"per", 0}  // 发音人，4：情感度丫丫童声
             };
-            var text = "丁,10,9,8,7,6,5,4,3,2,1";
+            var text = "滴,滴,答,10,9,8,7,6,5,4,3,2,1";
             WaveFileWriter writer = null;
             Stream output = null;
             foreach (var s in text.Split(',')) {
