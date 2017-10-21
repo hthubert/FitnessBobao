@@ -102,32 +102,28 @@ namespace Htggbb.FitnessCourse
             }
         }
 
-        private void ProcessLine(string line, WaveFileWriter writer)
+        private int ProcessLine(string text, int second, Stream writer)
         {
-            _logger.Debug($"Text To Speech: {line}");
-            var items = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            if (items.Length < 1) {
-                return;
-            }
-            var span = int.Parse(items[1]);
-            var speech = GetSpeech($"{items[0]},{span}秒,Go");
+            var speech = GetSpeech(text);
             writer.Write(speech, 0, speech.Length);
             if (_go != null) {
                 writer.Write(_go, 0, _go.Length);
             }
-            if (span < 30) {
-                WriteTick(writer, span - 5);
+
+            if (second < 30) {
+                WriteTick(writer, second - 5);
                 for (var i = 0; i < 5; i++) {
                     var number = _numbers[i + 5];
                     writer.Write(number, 0, number.Length);
                 }
             }
             else {
-                WriteTick(writer, span - _numbers.Count);
+                WriteTick(writer, second - _numbers.Count);
                 foreach (var number in _numbers) {
                     writer.Write(number, 0, number.Length);
                 }
             }
+            return speech.Length / _waveFormat.AverageBytesPerSecond + second;
         }
 
         private void WriteTick(Stream writer, int count)
@@ -160,7 +156,8 @@ namespace Htggbb.FitnessCourse
 
         public Task Process(string[] lines, string output)
         {
-            return Task.Run(() => {
+            void TaskRun()
+            {
                 if (_waveFormat == null) {
                     _logger.Error("Need init.");
                     return;
@@ -168,9 +165,21 @@ namespace Htggbb.FitnessCourse
 
                 using (var stream = new MemoryStream())
                 using (var writer = new WaveFileWriter(stream, _waveFormat)) {
+                    var lrc = new StringBuilder();
+                    var span = TimeSpan.Zero;
                     foreach (var line in lines) {
-                        ProcessLine(line, writer);
+                        var items = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                        if (items.Length < 1) {
+                            _logger.Warn($"无效的行： {line}");
+                            continue;
+                        }
+                        var second = int.Parse(items[1]);
+                        var speech = $"{items[0]},{second}秒,Go";
+                        lrc.AppendLine($"[{span:mm\\:ss}.00]{speech}");
+                        second = ProcessLine(speech, second, writer);
+                        span += TimeSpan.FromSeconds(second);
                     }
+                    File.WriteAllText(Path.ChangeExtension(output, ".lrc"), lrc.ToString());
                     writer.Flush();
                     if (Path.GetExtension(output).ToLower() == ".mp3") {
                         stream.Seek(0, SeekOrigin.Begin);
@@ -183,12 +192,15 @@ namespace Htggbb.FitnessCourse
                     }
                     _logger.Debug("生成完成.");
                 }
-            });
+            }
+
+            return Task.Run(() => TaskRun());
         }
 
         public Task Process(string path)
         {
-            return Task.Run(() => {
+            void TaskRun()
+            {
                 if (!File.Exists(path)) {
                     _logger.Error($"File not found: {path}.");
                     return;
@@ -198,9 +210,11 @@ namespace Htggbb.FitnessCourse
                     return;
                 }
                 var lines = File.ReadAllLines(path);
-                var wavFile = Path.ChangeExtension(path, "mp3");
+                var wavFile = Path.ChangeExtension(path, "mav");
                 Process(lines, wavFile).Wait();
-            });
+            }
+
+            return Task.Run(() => TaskRun());
         }
     }
 }
