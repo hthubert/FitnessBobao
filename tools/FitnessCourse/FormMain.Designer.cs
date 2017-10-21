@@ -32,8 +32,8 @@
             this.txtLog = new System.Windows.Forms.RichTextBox();
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             this.btnInit = new System.Windows.Forms.Button();
-            this.txtContent = new System.Windows.Forms.TextBox();
             this.btnTTS = new System.Windows.Forms.Button();
+            this.txtContent = new System.Windows.Forms.TextBox();
             this.saveDialog = new System.Windows.Forms.SaveFileDialog();
             this.flowLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
@@ -83,15 +83,6 @@
             this.btnInit.UseVisualStyleBackColor = true;
             this.btnInit.Click += new System.EventHandler(this.btnInit_Click);
             // 
-            // txtContent
-            // 
-            this.txtContent.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtContent.Location = new System.Drawing.Point(0, 33);
-            this.txtContent.Multiline = true;
-            this.txtContent.Name = "txtContent";
-            this.txtContent.Size = new System.Drawing.Size(600, 277);
-            this.txtContent.TabIndex = 3;
-            // 
             // btnTTS
             // 
             this.btnTTS.Location = new System.Drawing.Point(84, 3);
@@ -102,9 +93,20 @@
             this.btnTTS.UseVisualStyleBackColor = true;
             this.btnTTS.Click += new System.EventHandler(this.btnTTS_Click);
             // 
+            // txtContent
+            // 
+            this.txtContent.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.txtContent.Location = new System.Drawing.Point(0, 33);
+            this.txtContent.Multiline = true;
+            this.txtContent.Name = "txtContent";
+            this.txtContent.Size = new System.Drawing.Size(600, 277);
+            this.txtContent.TabIndex = 3;
+            // 
             // saveDialog
             // 
-            this.saveDialog.DefaultExt = "wav";
+            this.saveDialog.DefaultExt = "mp3";
+            this.saveDialog.Filter = "Wav File|*.wav|MP3 File|*.mp3";
+            this.saveDialog.FilterIndex = 2;
             this.saveDialog.Title = "指定要保存的课程名称";
             // 
             // FormMain

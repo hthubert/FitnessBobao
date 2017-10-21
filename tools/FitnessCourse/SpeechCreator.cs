@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Baidu.Aip.Speech;
+using NAudio.Lame;
 using NAudio.Wave;
 using NLog;
 
@@ -164,9 +165,21 @@ namespace Htggbb.FitnessCourse
                     _logger.Error("Need init.");
                     return;
                 }
-                using (var writer = new WaveFileWriter(output, _waveFormat)) {
+
+                using (var stream = new MemoryStream())
+                using (var writer = new WaveFileWriter(stream, _waveFormat)) {
                     foreach (var line in lines) {
                         ProcessLine(line, writer);
+                    }
+                    writer.Flush();
+                    if (Path.GetExtension(output).ToLower() == ".mp3") {
+                        stream.Seek(0, SeekOrigin.Begin);
+                        using (var mp3 = new LameMP3FileWriter(output, _waveFormat, LAMEPreset.ABR_128)) {
+                            stream.CopyTo(mp3);
+                        }
+                    }
+                    else {
+                        File.WriteAllBytes(output, stream.ToArray());
                     }
                     _logger.Debug("生成完成.");
                 }
@@ -185,7 +198,7 @@ namespace Htggbb.FitnessCourse
                     return;
                 }
                 var lines = File.ReadAllLines(path);
-                var wavFile = Path.ChangeExtension(path, "wav");
+                var wavFile = Path.ChangeExtension(path, "mp3");
                 Process(lines, wavFile).Wait();
             });
         }
