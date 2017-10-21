@@ -13,11 +13,11 @@ namespace Htggbb.FitnessCourse
 {
     internal class SpeechCreator
     {
-        private const string UsuallyItems = "go,10,9,8,7,6,5,4,3,2,1";
+        private const string NumberItems = "10,9,8,7,6,5,4,3,2,1";
         private readonly Tts _tts;
         private readonly Dictionary<string, object> _ttsOptions;
         private readonly List<byte[]> _numbers = new List<byte[]>();
-        private readonly List<byte[]> _prefixs = new List<byte[]>();
+        private byte[] _go;
         private byte[] _tick;
         private readonly ILogger _logger;
         private WaveFormat _waveFormat;
@@ -47,22 +47,15 @@ namespace Htggbb.FitnessCourse
             }
         }
 
-        private List<byte[]> GetSpeech(string speech)
+        private byte[] GetSpeech(string speech)
         {
-            var list = new List<byte[]>();
-            foreach (var s in speech.Split(',')) {
-                _logger.Debug($"baidu synthesis {s}.");
-                var result = _tts.Synthesis(s, _ttsOptions);
-                if (result.Success) {
-                    list.Add(GetPcmData(result.Data));
-                }
-                else {
-                    list.Add(null);
-                    _logger.Error(result.ErrorMsg);
-                }
-                Thread.Sleep(1000);
+            _logger.Debug($"baidu synthesis {speech}.");
+            var result = _tts.Synthesis(speech, _ttsOptions);
+            if (result.Success) {
+                return GetPcmData(result.Data);
             }
-            return list;
+            _logger.Error(result.ErrorMsg);
+            return null;
         }
 
         private void LoadTick()
@@ -70,6 +63,10 @@ namespace Htggbb.FitnessCourse
             _logger.Debug("load tick");
             const int bufferSize = 1024 * 32;
             using (var reader = new WaveFileReader("tick.wav")) {
+                if (_waveFormat == null) {
+                    var format = reader.WaveFormat;
+                    _waveFormat = new WaveFormat(format.SampleRate, format.BitsPerSample, format.Channels);
+                }
                 _tick = CreateSilentSound(reader.WaveFormat, 1);
                 var index = 0;
                 while (reader.Read(_tick, index, bufferSize) == bufferSize) {
@@ -78,34 +75,30 @@ namespace Htggbb.FitnessCourse
             }
         }
 
-        public SpeechCreator()
+        private void LoadGo()
         {
-            _logger = LogManager.GetLogger(nameof(SpeechCreator));
-            _tts = new Tts("4zGAhiQANs9tjMv4p1BCGmdh", "fbb284bd4c52f984bf63c78f0d661600");
-            _ttsOptions = new Dictionary<string, object>
-            {
-                {"spd", 5}, // 语速
-                {"vol", 5}, // 音量
-                {"per", 0}  // 发音人，4：情感度丫丫童声
-            };
+            _logger.Debug("load go");
+
         }
 
-        public Task Init()
+        private void LoadNumbers()
         {
-            return Task.Run(() => {
-                LoadTick();
-                _prefixs.Clear();
-                _numbers.Clear();
-                var list = GetSpeech(UsuallyItems);
-                for (var i = 0; i < list.Count; i++) {
-                    if (i < 1) {
-                        _prefixs.Add(list[i]);
-                    }
-                    else {
-                        _numbers.Add(list[i]);
-                    }
+            _logger.Debug("load numbers");
+            _numbers.Clear();
+            var numbers = NumberItems.Split(',');
+            foreach (var num in numbers) {
+                var file = $"{num}.data";
+                if (File.Exists(file)) {
+                    _numbers.Add(File.ReadAllBytes(file));
                 }
-            });
+                else {
+                    var data = GetSpeech(num);
+                    if (data != null) {
+                        File.WriteAllBytes(file, data);
+                    }
+                    _numbers.Add(data);
+                }
+            }
         }
 
         private void ProcessLine(string line, WaveFileWriter writer)
@@ -116,10 +109,10 @@ namespace Htggbb.FitnessCourse
                 return;
             }
             var span = int.Parse(items[1]);
-            var speech = GetSpeech($"{items[0]}{span}秒");
-            writer.Write(speech[0], 0, speech[0].Length);
-            foreach (var item in _prefixs) {
-                writer.Write(item, 0, item.Length);
+            var speech = GetSpeech($"{items[0]},{span}秒,Go");
+            writer.Write(speech, 0, speech.Length);
+            if (_go != null) {
+                writer.Write(_go, 0, _go.Length);
             }
             if (span <= 20) {
                 WriteTick(writer, span - 5);
@@ -143,6 +136,43 @@ namespace Htggbb.FitnessCourse
             }
         }
 
+        public SpeechCreator()
+        {
+            _logger = LogManager.GetLogger(nameof(SpeechCreator));
+            _tts = new Tts("4zGAhiQANs9tjMv4p1BCGmdh", "fbb284bd4c52f984bf63c78f0d661600");
+            _ttsOptions = new Dictionary<string, object>
+            {
+                {"spd", 5}, // 语速
+                {"vol", 5}, // 音量
+                {"per", 0}  // 发音人，4：情感度丫丫童声
+            };
+        }
+
+        public Task Init()
+        {
+            return Task.Run(() => {
+                LoadTick();
+                LoadGo();
+                LoadNumbers();
+            });
+        }
+
+        public Task Process(string[] lines, string output)
+        {
+            return Task.Run(() => {
+                if (_waveFormat == null) {
+                    _logger.Error("Need init.");
+                    return;
+                }
+                using (var writer = new WaveFileWriter(output, _waveFormat)) {
+                    foreach (var line in lines) {
+                        ProcessLine(line, writer);
+                    }
+                    _logger.Debug("生成完成.");
+                }
+            });
+        }
+
         public Task Process(string path)
         {
             return Task.Run(() => {
@@ -154,14 +184,9 @@ namespace Htggbb.FitnessCourse
                     _logger.Error("Need init.");
                     return;
                 }
-
                 var lines = File.ReadAllLines(path);
                 var wavFile = Path.ChangeExtension(path, "wav");
-                using (var writer = new WaveFileWriter(wavFile, _waveFormat)) {
-                    foreach (var line in lines) {
-                        ProcessLine(line, writer);
-                    }
-                }
+                Process(lines, wavFile).Wait();
             });
         }
     }

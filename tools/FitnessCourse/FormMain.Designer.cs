@@ -32,35 +32,40 @@
             this.txtLog = new System.Windows.Forms.RichTextBox();
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             this.btnInit = new System.Windows.Forms.Button();
+            this.txtContent = new System.Windows.Forms.TextBox();
+            this.btnTTS = new System.Windows.Forms.Button();
+            this.saveDialog = new System.Windows.Forms.SaveFileDialog();
             this.flowLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnSynthesis
             // 
-            this.btnSynthesis.Location = new System.Drawing.Point(84, 3);
+            this.btnSynthesis.Location = new System.Drawing.Point(165, 3);
             this.btnSynthesis.Name = "btnSynthesis";
-            this.btnSynthesis.Size = new System.Drawing.Size(122, 23);
+            this.btnSynthesis.Size = new System.Drawing.Size(90, 23);
             this.btnSynthesis.TabIndex = 0;
-            this.btnSynthesis.Text = "Text to speech";
+            this.btnSynthesis.Text = "TTS File ...";
             this.btnSynthesis.UseVisualStyleBackColor = true;
             this.btnSynthesis.Click += new System.EventHandler(this.btnSynthesis_Click);
             // 
             // openDialog
             // 
             this.openDialog.Filter = "课程文件 | *.txt";
+            this.openDialog.Title = "选择课程文件";
             // 
             // txtLog
             // 
-            this.txtLog.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtLog.Location = new System.Drawing.Point(0, 33);
+            this.txtLog.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.txtLog.Location = new System.Drawing.Point(0, 310);
             this.txtLog.Name = "txtLog";
-            this.txtLog.Size = new System.Drawing.Size(600, 256);
+            this.txtLog.Size = new System.Drawing.Size(600, 142);
             this.txtLog.TabIndex = 1;
             this.txtLog.Text = "";
             // 
             // flowLayoutPanel1
             // 
             this.flowLayoutPanel1.Controls.Add(this.btnInit);
+            this.flowLayoutPanel1.Controls.Add(this.btnTTS);
             this.flowLayoutPanel1.Controls.Add(this.btnSynthesis);
             this.flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Top;
             this.flowLayoutPanel1.Location = new System.Drawing.Point(0, 0);
@@ -78,11 +83,36 @@
             this.btnInit.UseVisualStyleBackColor = true;
             this.btnInit.Click += new System.EventHandler(this.btnInit_Click);
             // 
+            // txtContent
+            // 
+            this.txtContent.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.txtContent.Location = new System.Drawing.Point(0, 33);
+            this.txtContent.Multiline = true;
+            this.txtContent.Name = "txtContent";
+            this.txtContent.Size = new System.Drawing.Size(600, 277);
+            this.txtContent.TabIndex = 3;
+            // 
+            // btnTTS
+            // 
+            this.btnTTS.Location = new System.Drawing.Point(84, 3);
+            this.btnTTS.Name = "btnTTS";
+            this.btnTTS.Size = new System.Drawing.Size(75, 23);
+            this.btnTTS.TabIndex = 2;
+            this.btnTTS.Text = "TTS";
+            this.btnTTS.UseVisualStyleBackColor = true;
+            this.btnTTS.Click += new System.EventHandler(this.btnTTS_Click);
+            // 
+            // saveDialog
+            // 
+            this.saveDialog.DefaultExt = "wav";
+            this.saveDialog.Title = "指定要保存的课程名称";
+            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(600, 289);
+            this.ClientSize = new System.Drawing.Size(600, 452);
+            this.Controls.Add(this.txtContent);
             this.Controls.Add(this.txtLog);
             this.Controls.Add(this.flowLayoutPanel1);
             this.Name = "FormMain";
@@ -90,6 +120,7 @@
             this.Load += new System.EventHandler(this.FormMain_Load);
             this.flowLayoutPanel1.ResumeLayout(false);
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -100,6 +131,9 @@
         private System.Windows.Forms.RichTextBox txtLog;
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
         private System.Windows.Forms.Button btnInit;
+        private System.Windows.Forms.TextBox txtContent;
+        private System.Windows.Forms.Button btnTTS;
+        private System.Windows.Forms.SaveFileDialog saveDialog;
     }
 }
 

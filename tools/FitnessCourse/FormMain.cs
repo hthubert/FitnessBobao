@@ -35,5 +35,19 @@ namespace Htggbb.FitnessCourse
                 Application.DoEvents();
             }
         }
+
+        private void btnTTS_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(txtContent.Text)) {
+                return;
+            }
+            if (saveDialog.ShowDialog() != DialogResult.OK) {
+                return;
+            }
+            var task = _creator.Process(txtContent.Lines, saveDialog.FileName);
+            while (!task.Wait(0)) {
+                Application.DoEvents();
+            }
+        }
     }
 }
