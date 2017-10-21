@@ -115,10 +115,10 @@ namespace Htggbb.FitnessCourse
             if (_go != null) {
                 writer.Write(_go, 0, _go.Length);
             }
-            if (span <= 20) {
+            if (span < 30) {
                 WriteTick(writer, span - 5);
                 for (var i = 0; i < 5; i++) {
-                    var number = _numbers[i];
+                    var number = _numbers[i + 5];
                     writer.Write(number, 0, number.Length);
                 }
             }
