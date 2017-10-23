@@ -210,7 +210,7 @@ namespace Htggbb.FitnessCourse
                     return;
                 }
                 var lines = File.ReadAllLines(path);
-                var wavFile = Path.ChangeExtension(path, "mav");
+                var wavFile = Path.ChangeExtension(path, "wav");
                 Process(lines, wavFile).Wait();
             }
 
